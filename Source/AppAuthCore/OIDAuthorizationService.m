@@ -117,7 +117,18 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)shouldHandleURL:(NSURL *)URL {
-  return [[self class] URL:URL matchesRedirectionURL:_request.redirectURL];
+    NSURL *standardizedURL = [URL standardizedURL];
+    NSURL *standardizedRedirectURL = [_request.redirectURL standardizedURL];
+
+    return OIDIsEqualIncludingNil(standardizedURL.scheme, standardizedRedirectURL.scheme) &&
+    OIDIsEqualIncludingNil(standardizedURL.user, standardizedRedirectURL.user) &&
+    OIDIsEqualIncludingNil(standardizedURL.password, standardizedRedirectURL.password) &&
+    OIDIsEqualIncludingNil(standardizedURL.host, standardizedRedirectURL.host) &&
+    OIDIsEqualIncludingNil(standardizedURL.port, standardizedRedirectURL.port) &&
+    (OIDIsEqualIncludingNil(standardizedURL.path, standardizedRedirectURL.path) ||
+    (standardizedURL.path.length > 0 && [standardizedURL.path hasSuffix:@"/"] &&
+    OIDIsEqualIncludingNil([standardizedURL.path substringToIndex:standardizedURL.path.length-1],
+    standardizedRedirectURL.path)));
 }
 
 - (BOOL)resumeExternalUserAgentFlowWithURL:(NSURL *)URL {
